@@ -24,6 +24,7 @@ public partial class WidgetWindow : Window
 
     private readonly Settings _settings;
     private readonly DispatcherTimer _placement;
+    private ZOrderWatcher? _zOrder;
 
     private RECT _lastRect;
     private RECT _candidateRect;
@@ -66,6 +67,10 @@ public partial class WidgetWindow : Window
         ApplySettings();
         UpdatePlacement();
         _placement.Start();
+
+        // The polling timer is only a backstop: a taskbar flyout can bury the readout for a whole
+        // tick, which is long enough to see. This restores z-order within a few milliseconds.
+        _zOrder = new ZOrderWatcher(RestoreZOrder);
     }
 
     // ---------------------------------------------------------------- appearance
@@ -73,7 +78,9 @@ public partial class WidgetWindow : Window
     public void ApplySettings()
     {
         double fs = _settings.FontSize;
-        double unitFs = Math.Max(8, fs - 2);
+        // Same size and weight as the number: at these sizes a smaller, lighter unit picks up
+        // different hinting and reads as a second typeface.
+        double unitFs = fs;
         UpValue.FontSize = fs;
         DownValue.FontSize = fs;
         UpArrow.FontSize = fs;
@@ -82,7 +89,7 @@ public partial class WidgetWindow : Window
         DownUnit.FontSize = unitFs;
 
         // Reserve enough room for the widest unit string so the numbers never shift sideways.
-        double unitWidth = Math.Round(unitFs * (_settings.Unit == SpeedUnit.Bits ? 3.2 : 2.95));
+        double unitWidth = Math.Round(unitFs * (_settings.Unit == SpeedUnit.Bits ? 2.7 : 2.45));
         UpUnit.MinWidth = unitWidth;
         DownUnit.MinWidth = unitWidth;
 
@@ -230,6 +237,12 @@ public partial class WidgetWindow : Window
         _candidateHits = 0;
     }
 
+    private void RestoreZOrder()
+    {
+        if (_hidden || !IsLoaded) return;
+        WindowHelper.BumpToTop(this);
+    }
+
     private void PlaceFloating()
     {
         double scale = WindowHelper.ScaleOf(this);
@@ -329,6 +342,8 @@ public partial class WidgetWindow : Window
     public void Shutdown()
     {
         _placement.Stop();
+        _zOrder?.Dispose();
+        _zOrder = null;
         Theme.Changed -= ApplyChrome;
     }
 }

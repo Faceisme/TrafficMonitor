@@ -41,8 +41,8 @@
                  Foreground="{DynamicResource WidgetTextBrush}"/>
       <TextBlock x:Name="UpUnit" Grid.Row="0" Grid.Column="2" Text="B/s"
                  VerticalAlignment="Center" HorizontalAlignment="Left"
-                 Margin="3,0,0,0" MinWidth="30"
-                 Opacity="0.72"
+                 Margin="4,0,0,0" MinWidth="30"
+                 FontWeight="SemiBold"
                  Foreground="{DynamicResource WidgetTextBrush}"/>
 
       <!-- download -->
@@ -56,8 +56,8 @@
                  Foreground="{DynamicResource WidgetTextBrush}"/>
       <TextBlock x:Name="DownUnit" Grid.Row="1" Grid.Column="2" Text="B/s"
                  VerticalAlignment="Center" HorizontalAlignment="Left"
-                 Margin="3,0,0,0" MinWidth="30"
-                 Opacity="0.72"
+                 Margin="4,0,0,0" MinWidth="30"
+                 FontWeight="SemiBold"
                  Foreground="{DynamicResource WidgetTextBrush}"/>
     </Grid>
   </Border>
