@@ -19,7 +19,20 @@ if (Get-Process NetSpeed -ErrorAction SilentlyContinue) {
     exit 1
 }
 
-if (Test-Path $Output) { Remove-Item $Output -Recurse -Force }
+# A sync client (this repo may live in Dropbox/OneDrive) can hold a handle on freshly written
+# files. Publishing over the top is fine, so a failed wipe is a warning rather than an error.
+if (Test-Path $Output) {
+    try {
+        Remove-Item $Output -Recurse -Force -ErrorAction Stop
+    } catch {
+        Start-Sleep -Seconds 2
+        try {
+            Remove-Item $Output -Recurse -Force -ErrorAction Stop
+        } catch {
+            Write-Host "输出目录被占用，改为覆盖发布（可能残留旧文件）。" -ForegroundColor Yellow
+        }
+    }
+}
 
 $args = @(
     "publish", $project,
