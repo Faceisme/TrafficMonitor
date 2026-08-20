@@ -5,7 +5,7 @@
 .EXAMPLE
   .\build.ps1                 # needs the .NET 8 Desktop Runtime on the target machine (~6 MB folder)
   .\build.ps1 -SelfContained  # bundles the runtime, no install needed (~150 MB folder)
-  .\build.ps1 -SingleFile     # one big .exe -- see the warning below
+  .\build.ps1 -SingleFile     # one ~150 MB .exe, nothing else to copy
 #>
 param(
     [switch]$SelfContained,
@@ -51,11 +51,8 @@ if ($SelfContained -or $SingleFile) {
 }
 
 if ($SingleFile) {
-    # TraceEvent loads amd64\KernelTraceControl.dll relative to the executable. Single-file publish
-    # embeds it and extracts it to a temp folder instead, which that lookup does not follow, so the
-    # per-process ETW session may fail to start. Verify on the target machine before relying on it.
-    Write-Host "警告: 单文件模式会把 amd64\KernelTraceControl.dll 打进 exe 并解压到临时目录," -ForegroundColor Yellow
-    Write-Host "      TraceEvent 按 exe 所在目录查找该文件, 进程流量统计可能失效。请实测确认。" -ForegroundColor Yellow
+    # amd64\KernelTraceControl.dll only matters for merging ETL files, which this app never does:
+    # a real-time kernel session starts fine without it, so single-file publish is safe here.
     $args += @("-p:PublishSingleFile=true", "-p:IncludeNativeLibrariesForSelfExtract=true")
 }
 

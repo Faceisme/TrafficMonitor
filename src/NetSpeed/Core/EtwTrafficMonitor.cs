@@ -139,6 +139,9 @@ public sealed class EtwTrafficMonitor : IDisposable
     {
         State = state;
         Error = error;
+        // Whether the kernel session came up is the single most useful thing to know when the
+        // process list is empty on someone else's machine.
+        Log.Info(error == null ? $"etw: {state}" : $"etw: {state} - {error}");
         StateChanged?.Invoke();
     }
 

@@ -30,18 +30,17 @@ Windows 11 任务栏网速监控。只做一件事：**看网速，以及是谁�
 
 ## 装到另一台电脑
 
-程序是绿色的，没有安装程序，**复制整个文件夹即可**，不能只拷 `NetSpeed.exe`。
+程序是绿色的，没有安装程序。三种打包方式，实测都能正常建立内核 ETW 会话（即进程排行可用）：
 
-`amd64\KernelTraceControl.dll` 和 `msdia140.dll` 是 TraceEvent 的原生依赖，它按 exe 所在目录去找这个子文件夹，少了它进程流量统计起不来。
-
-两种做法：
-
-| | 拷什么 | 目标机器要装什么 | 体积 |
+| 打包命令 | 拷什么 | 目标机器要装什么 | 体积 |
 | --- | --- | --- | --- |
-| 默认 | `publish\` 整个文件夹（含 `amd64\`） | [.NET 8 桌面运行时](https://dotnet.microsoft.com/download/dotnet/8.0) | ~6 MB |
-| `-SelfContained` | 输出文件夹整个拷 | 无 | ~150 MB |
+| `.\build.ps1` | `publish\` **整个文件夹** | [.NET 8 桌面运行时](https://dotnet.microsoft.com/download/dotnet/8.0) | ~6 MB |
+| `.\build.ps1 -SelfContained` | 输出文件夹整个拷 | 无 | ~150 MB |
+| `.\build.ps1 -SingleFile` | 单个 `NetSpeed.exe` | 无 | ~150 MB |
 
-放到目标机器上任意固定位置（例如 `C:\Tools\NetSpeed\`），别放桌面或下载目录——开机自启记的是绝对路径，之后再挪就得重设。
+前两种**必须拷整个文件夹**，只拷 `NetSpeed.exe` 起不来——TraceEvent 等依赖是并排的独立 DLL。
+
+放到目标机器上一个**固定位置**（例如 `C:\Tools\NetSpeed\`），别放桌面或下载目录——开机自启记的是绝对路径，之后再挪就得重设。
 
 然后：
 
@@ -50,7 +49,11 @@ Windows 11 任务栏网速监控。只做一件事：**看网速，以及是谁�
 
 不用拷的东西：`%AppData%\NetSpeed\` 下的配置和日志会自动重建；开机自启是每台机器各自的计划任务，需要在新机器上重新打开一次。
 
-> `-SingleFile` 可以打成单个 exe，但单文件模式会把 `amd64\KernelTraceControl.dll` 解压到临时目录，而 TraceEvent 是按 exe 所在目录查找的——进程流量统计可能失效。**未经实测不要用。**
+> 随包的 `amd64\KernelTraceControl.dll` 只在合并 ETL 文件时才用得到，本程序不做这件事——实测把它删掉，实时内核会话照样能启动。所以单文件模式也是安全的。
+
+排查启动问题看 `%AppData%\NetSpeed\error.log`，里面会记录 ETW 会话状态（`etw: Running` / `etw: NeedsAdmin` / `etw: Failed - ...`）。
+
+> 如果程序是被强制结束的（任务管理器结束进程、崩溃），它的内核 ETW 会话会残留到下次重启。下次启动时程序会自动接管并重建同名会话，不需要手工清理。
 
 ## 使用
 
