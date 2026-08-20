@@ -1,0 +1,26 @@
+# Build output
+bin/
+obj/
+publish/
+[Dd]ebug/
+[Rr]elease/
+*.dll
+*.exe
+*.pdb
+
+# Keep the app icon, which is a source asset rather than build output
+!src/NetSpeed/Assets/app.ico
+
+# IDE / tooling
+.vs/
+.idea/
+*.user
+*.suo
+*.sln.docstates
+
+# NuGet
+packages/
+*.nupkg
+
+# Local scratch
+.probe/

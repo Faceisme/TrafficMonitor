@@ -1,0 +1,64 @@
+<Window x:Class="NetSpeed.UI.WidgetWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="NetSpeed"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ShowInTaskbar="False"
+        ShowActivated="False"
+        Topmost="True"
+        ResizeMode="NoResize"
+        SizeToContent="Manual"
+        Width="88" Height="48"
+        Left="-4000" Top="-4000"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="Grayscale"
+        FontFamily="{StaticResource UiFont}">
+
+  <Border x:Name="Root" CornerRadius="6" Background="Transparent" Padding="5,0,4,0">
+    <Grid VerticalAlignment="Center">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="*"/>
+        <RowDefinition Height="*"/>
+      </Grid.RowDefinitions>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto"/>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="Auto"/>
+      </Grid.ColumnDefinitions>
+
+      <!-- upload -->
+      <TextBlock x:Name="UpArrow" Grid.Row="0" Grid.Column="0" Text="&#x2191;"
+                 VerticalAlignment="Center" Margin="0,0,3,0"
+                 Foreground="{DynamicResource WidgetUpBrush}"/>
+      <TextBlock x:Name="UpValue" Grid.Row="0" Grid.Column="1" Text="0"
+                 VerticalAlignment="Center" HorizontalAlignment="Right"
+                 FontWeight="SemiBold"
+                 Typography.NumeralAlignment="Tabular"
+                 Foreground="{DynamicResource WidgetTextBrush}"/>
+      <TextBlock x:Name="UpUnit" Grid.Row="0" Grid.Column="2" Text="B/s"
+                 VerticalAlignment="Center" HorizontalAlignment="Left"
+                 Margin="3,0,0,0" MinWidth="30"
+                 Opacity="0.72"
+                 Foreground="{DynamicResource WidgetTextBrush}"/>
+
+      <!-- download -->
+      <TextBlock x:Name="DownArrow" Grid.Row="1" Grid.Column="0" Text="&#x2193;"
+                 VerticalAlignment="Center" Margin="0,0,3,0"
+                 Foreground="{DynamicResource WidgetDownBrush}"/>
+      <TextBlock x:Name="DownValue" Grid.Row="1" Grid.Column="1" Text="0"
+                 VerticalAlignment="Center" HorizontalAlignment="Right"
+                 FontWeight="SemiBold"
+                 Typography.NumeralAlignment="Tabular"
+                 Foreground="{DynamicResource WidgetTextBrush}"/>
+      <TextBlock x:Name="DownUnit" Grid.Row="1" Grid.Column="2" Text="B/s"
+                 VerticalAlignment="Center" HorizontalAlignment="Left"
+                 Margin="3,0,0,0" MinWidth="30"
+                 Opacity="0.72"
+                 Foreground="{DynamicResource WidgetTextBrush}"/>
+    </Grid>
+  </Border>
+</Window>

@@ -1,0 +1,186 @@
+<Window x:Class="NetSpeed.UI.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="NetSpeed 设置"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        SizeToContent="Height"
+        Width="446"
+        WindowStartupLocation="CenterScreen"
+        ShowInTaskbar="True"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True"
+        TextOptions.TextFormattingMode="Ideal"
+        FontFamily="{StaticResource UiFont}">
+
+  <Window.Resources>
+    <Style x:Key="RowLabel" TargetType="TextBlock">
+      <Setter Property="FontSize" Value="13.5"/>
+      <Setter Property="VerticalAlignment" Value="Center"/>
+      <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+    </Style>
+    <Style x:Key="RowHint" TargetType="TextBlock">
+      <Setter Property="FontSize" Value="12"/>
+      <Setter Property="Margin" Value="0,1,0,0"/>
+      <Setter Property="TextWrapping" Value="Wrap"/>
+      <Setter Property="Foreground" Value="{DynamicResource TextTertiaryBrush}"/>
+    </Style>
+    <Style x:Key="SectionHeader" TargetType="TextBlock">
+      <Setter Property="FontSize" Value="12.5"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="Margin" Value="0,16,0,6"/>
+      <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+    </Style>
+    <Style x:Key="StepValue" TargetType="TextBlock">
+      <Setter Property="FontSize" Value="14"/>
+      <Setter Property="MinWidth" Value="52"/>
+      <Setter Property="TextAlignment" Value="Center"/>
+      <Setter Property="VerticalAlignment" Value="Center"/>
+      <Setter Property="Typography.NumeralAlignment" Value="Tabular"/>
+      <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+    </Style>
+  </Window.Resources>
+
+  <Border Margin="14,10,14,16" CornerRadius="11"
+          Background="{DynamicResource CardBrush}"
+          BorderBrush="{DynamicResource CardBorderBrush}"
+          BorderThickness="1">
+    <Border.Effect>
+      <DropShadowEffect BlurRadius="28" ShadowDepth="6" Opacity="0.36" Color="Black"/>
+    </Border.Effect>
+
+    <StackPanel>
+
+      <!-- title bar -->
+      <Grid x:Name="TitleBar" Height="48" Background="Transparent">
+        <TextBlock Text="设置" FontSize="15" FontWeight="SemiBold" Margin="20,0,0,0"
+                   VerticalAlignment="Center"
+                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+        <Button x:Name="CloseButton" Style="{StaticResource SubtleButton}"
+                HorizontalAlignment="Right" VerticalAlignment="Center"
+                Margin="0,0,10,0" Width="34" Height="32" Padding="0" FontSize="13"
+                Content="&#x2715;"/>
+      </Grid>
+
+      <Border Height="1" Background="{DynamicResource DividerBrush}"/>
+
+      <ScrollViewer x:Name="Body" VerticalScrollBarVisibility="Auto" PanningMode="VerticalOnly">
+      <StackPanel Margin="20,2,20,18">
+
+        <!-- ================= 显示 ================= -->
+        <TextBlock Text="显示" Style="{StaticResource SectionHeader}" Margin="0,12,0,6"/>
+
+        <Grid Margin="0,6">
+          <TextBlock Text="显示位置" Style="{StaticResource RowLabel}"/>
+          <ComboBox x:Name="ModeCombo" Style="{StaticResource ComboStyle}"
+                    HorizontalAlignment="Right" Width="168"/>
+        </Grid>
+
+        <Grid Margin="0,6">
+          <TextBlock Text="宽度" Style="{StaticResource RowLabel}"/>
+          <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button x:Name="WidthMinus" Content="&#x2212;" Style="{StaticResource StepperButton}"/>
+            <TextBlock x:Name="WidthValue" Style="{StaticResource StepValue}"/>
+            <Button x:Name="WidthPlus" Content="+" Style="{StaticResource StepperButton}"/>
+          </StackPanel>
+        </Grid>
+
+        <Grid Margin="0,6" x:Name="GapRow">
+          <StackPanel>
+            <TextBlock Text="与托盘图标的间距" Style="{StaticResource RowLabel}"/>
+          </StackPanel>
+          <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button x:Name="GapMinus" Content="&#x2212;" Style="{StaticResource StepperButton}"/>
+            <TextBlock x:Name="GapValue" Style="{StaticResource StepValue}"/>
+            <Button x:Name="GapPlus" Content="+" Style="{StaticResource StepperButton}"/>
+          </StackPanel>
+        </Grid>
+
+        <Grid Margin="0,6" x:Name="OffsetRow">
+          <TextBlock Text="垂直微调" Style="{StaticResource RowLabel}"/>
+          <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button x:Name="OffsetMinus" Content="&#x2212;" Style="{StaticResource StepperButton}"/>
+            <TextBlock x:Name="OffsetValue" Style="{StaticResource StepValue}"/>
+            <Button x:Name="OffsetPlus" Content="+" Style="{StaticResource StepperButton}"/>
+          </StackPanel>
+        </Grid>
+
+        <Grid Margin="0,6">
+          <TextBlock Text="字号" Style="{StaticResource RowLabel}"/>
+          <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button x:Name="FontMinus" Content="&#x2212;" Style="{StaticResource StepperButton}"/>
+            <TextBlock x:Name="FontValue" Style="{StaticResource StepValue}"/>
+            <Button x:Name="FontPlus" Content="+" Style="{StaticResource StepperButton}"/>
+          </StackPanel>
+        </Grid>
+
+        <!-- ================= 数据 ================= -->
+        <TextBlock Text="数据" Style="{StaticResource SectionHeader}"/>
+
+        <Grid Margin="0,6">
+          <TextBlock Text="刷新间隔" Style="{StaticResource RowLabel}"/>
+          <ComboBox x:Name="IntervalCombo" Style="{StaticResource ComboStyle}"
+                    HorizontalAlignment="Right" Width="168"/>
+        </Grid>
+
+        <Grid Margin="0,6">
+          <TextBlock Text="速度单位" Style="{StaticResource RowLabel}"/>
+          <ComboBox x:Name="UnitCombo" Style="{StaticResource ComboStyle}"
+                    HorizontalAlignment="Right" Width="168"/>
+        </Grid>
+
+        <Grid Margin="0,6">
+          <TextBlock Text="进程排行条数" Style="{StaticResource RowLabel}"/>
+          <ComboBox x:Name="TopCombo" Style="{StaticResource ComboStyle}"
+                    HorizontalAlignment="Right" Width="168"/>
+        </Grid>
+
+        <Grid Margin="0,6">
+          <TextBlock Text="网卡" Style="{StaticResource RowLabel}"/>
+          <ComboBox x:Name="AdapterCombo" Style="{StaticResource ComboStyle}"
+                    HorizontalAlignment="Right" Width="168"/>
+        </Grid>
+
+        <!-- ================= 行为 ================= -->
+        <TextBlock Text="行为" Style="{StaticResource SectionHeader}"/>
+
+        <Grid Margin="0,7">
+          <StackPanel Margin="0,0,66,0">
+            <TextBlock Text="开机自动启动" Style="{StaticResource RowLabel}"/>
+            <TextBlock x:Name="AutoStartHint" Style="{StaticResource RowHint}"/>
+          </StackPanel>
+          <CheckBox x:Name="AutoStartToggle" Style="{StaticResource ToggleSwitch}"
+                    HorizontalAlignment="Right" VerticalAlignment="Center"/>
+        </Grid>
+
+        <Grid Margin="0,6">
+          <TextBlock Text="显示托盘图标" Style="{StaticResource RowLabel}"/>
+          <CheckBox x:Name="TrayToggle" Style="{StaticResource ToggleSwitch}"
+                    HorizontalAlignment="Right" VerticalAlignment="Center"/>
+        </Grid>
+
+        <Grid Margin="0,7">
+          <StackPanel Margin="0,0,66,0">
+            <TextBlock Text="全屏时自动隐藏" Style="{StaticResource RowLabel}"/>
+            <TextBlock Text="看视频、玩游戏时不遮挡画面" Style="{StaticResource RowHint}"/>
+          </StackPanel>
+          <CheckBox x:Name="FullscreenToggle" Style="{StaticResource ToggleSwitch}"
+                    HorizontalAlignment="Right" VerticalAlignment="Center"/>
+        </Grid>
+
+        <Border Height="1" Margin="0,16,0,0" Background="{DynamicResource DividerBrush}"/>
+
+        <Grid Margin="0,14,0,0">
+          <TextBlock x:Name="PrivilegeLabel" Style="{StaticResource RowHint}"
+                     VerticalAlignment="Center" MaxWidth="252" HorizontalAlignment="Left"/>
+          <Button x:Name="DoneButton" Content="完成" Style="{StaticResource AccentButton}"
+                  HorizontalAlignment="Right"/>
+        </Grid>
+
+      </StackPanel>
+      </ScrollViewer>
+    </StackPanel>
+  </Border>
+</Window>
