@@ -38,6 +38,8 @@ public partial class WidgetWindow : Window
 
     public event Action? TogglePinRequested;
     public event Action? ContextMenuRequested;
+    /// <summary>Raised when the readout is forced off-screen, e.g. a fullscreen app taking over.</summary>
+    public event Action? HiddenChanged;
 
     public WidgetWindow(Settings settings)
     {
@@ -276,6 +278,7 @@ public partial class WidgetWindow : Window
         if (hide == _hidden) return;
         _hidden = hide;
         Visibility = hide ? Visibility.Hidden : Visibility.Visible;
+        if (hide) HiddenChanged?.Invoke();
     }
 
     private static bool SameRect(RECT a, RECT b) =>

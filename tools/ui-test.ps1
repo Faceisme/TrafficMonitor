@@ -15,7 +15,8 @@ param(
     [switch]$Dark,
     [switch]$Settings,
     [switch]$Menu,
-    [switch]$Flyout
+    [switch]$Flyout,
+    [switch]$ClickToggle
 )
 
 $ErrorActionPreference = "Stop"
@@ -122,6 +123,26 @@ if (-not $SkipBuild) {
         var autoFlyout = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
         autoFlyout.Tick += (_, _) => { autoFlyout.Stop(); OnWidgetClicked(); };
         autoFlyout.Start();
+'@
+    }
+
+    if ($ClickToggle) {
+        # Simulates two clicks on the widget (open, then close) without touching the mouse, so a
+        # review run can screenshot the round trip and confirm hover alone never opens it.
+        Patch "App.xaml.cs" @'
+        ApplyTrayIcon();
+        _monitor.Start();
+'@ @'
+        ApplyTrayIcon();
+        _monitor.Start();
+
+        var openAt = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
+        openAt.Tick += (_, _) => { openAt.Stop(); Log.Info("ClickToggle: click #1 (open)"); OnWidgetClicked(); };
+        openAt.Start();
+
+        var closeAt = new DispatcherTimer { Interval = TimeSpan.FromSeconds(9) };
+        closeAt.Tick += (_, _) => { closeAt.Stop(); Log.Info("ClickToggle: click #2 (close)"); OnWidgetClicked(); };
+        closeAt.Start();
 '@
     }
 

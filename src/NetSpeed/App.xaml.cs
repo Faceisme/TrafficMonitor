@@ -25,11 +25,8 @@ public partial class App : Application
     private Forms.NotifyIcon? _tray;
     private ContextMenu? _menu;
 
-    private DispatcherTimer _hoverTimer = null!;
-    private int _outsideTicks;
     private TaskbarEdge _edge = TaskbarEdge.Bottom;
     private bool _shuttingDown;
-    private bool _menuOpen;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -68,6 +65,7 @@ public partial class App : Application
         _widget = new WidgetWindow(_settings);
         _widget.TogglePinRequested += OnWidgetClicked;
         _widget.ContextMenuRequested += ShowMenu;
+        _widget.HiddenChanged += () => { if (_popup.IsPinned) _popup.SetPinned(false); };
         _widget.Show();
 
         _popup = new PopupWindow(_settings);
@@ -76,10 +74,6 @@ public partial class App : Application
         _popup.ExitRequested += ExitApp;
 
         _settings.Changed += OnSettingsChanged;
-
-        _hoverTimer = new DispatcherTimer(DispatcherPriority.Input) { Interval = TimeSpan.FromMilliseconds(140) };
-        _hoverTimer.Tick += (_, _) => TrackHover();
-        _hoverTimer.Start();
 
         ApplyTrayIcon();
         _monitor.Start();
@@ -109,32 +103,7 @@ public partial class App : Application
         if (_popup.IsFlyoutVisible) _popup.Apply(_monitor.Latest);
     }
 
-    // ---------------------------------------------------------------- hover flyout
-
-    private void TrackHover()
-    {
-        if (_shuttingDown || _menuOpen) return;
-
-        if (!_widget.IsShown)
-        {
-            if (_popup.IsFlyoutVisible && !_popup.IsPinned) _popup.HideFlyout();
-            return;
-        }
-
-        var p = WindowHelper.CursorPos();
-        bool overWidget = _widget.PhysicalRect.Inflate(2).Contains(p.X, p.Y);
-        bool overPopup = _popup.IsFlyoutVisible && _popup.PhysicalRect.Contains(p.X, p.Y);
-
-        if (overWidget || overPopup)
-        {
-            _outsideTicks = 0;
-            if (!_popup.IsFlyoutVisible) ShowFlyout();
-            return;
-        }
-
-        if (_popup.IsFlyoutVisible && !_popup.IsPinned && ++_outsideTicks >= 2)
-            _popup.HideFlyout();
-    }
+    // ---------------------------------------------------------------- flyout
 
     private void ShowFlyout()
     {
@@ -255,8 +224,7 @@ public partial class App : Application
         menu.Items.Add(new Separator { Style = (Style)FindResource("MenuSep") });
         menu.Items.Add(Menu("退出", ExitApp));
 
-        menu.Opened += (_, _) => { _menuOpen = true; RaiseAboveTopmost(menu); };
-        menu.Closed += (_, _) => { _menuOpen = false; _outsideTicks = 0; };
+        menu.Opened += (_, _) => RaiseAboveTopmost(menu);
 
         _menu = menu;
         menu.IsOpen = true;
@@ -326,7 +294,6 @@ public partial class App : Application
         if (_shuttingDown) return;
         _shuttingDown = true;
 
-        _hoverTimer?.Stop();
         _widget?.Shutdown();
         _monitor?.Dispose();
 
