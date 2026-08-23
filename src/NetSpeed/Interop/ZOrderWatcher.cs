@@ -20,6 +20,14 @@ internal sealed class ZOrderWatcher : IDisposable
     private DateTime _lastRaised = DateTime.MinValue;
     private bool _disposed;
 
+    /// <summary>
+    /// The explorer.exe PID the shell-scoped hook was bound to at construction time. If explorer
+    /// restarts (crash, "Restart Windows Explorer", some updates), Windows starts filtering that
+    /// PID-scoped hook against a process that no longer exists, and it goes silently deaf — the
+    /// owner has to notice the shell PID changed and recreate this watcher.
+    /// </summary>
+    public uint ShellPid { get; }
+
     public ZOrderWatcher(Action onChanged)
     {
         _onChanged = onChanged;
@@ -29,18 +37,12 @@ internal sealed class ZOrderWatcher : IDisposable
         _settle = new DispatcherTimer(DispatcherPriority.Send) { Interval = TimeSpan.FromMilliseconds(30) };
         _settle.Tick += (_, _) => { _settle.Stop(); if (!_disposed) _onChanged(); };
 
-        uint shellPid = 0;
-        var shell = Native.GetShellWindow();
-        if (shell != IntPtr.Zero)
-        {
-            Native.GetWindowThreadProcessId(shell, out int pid);
-            if (pid > 0) shellPid = (uint)pid;
-        }
+        ShellPid = WindowHelper.GetShellProcessId();
 
         // Scoped to explorer: the taskbar raising itself is the case that matters, and a global
         // reorder hook would fire constantly. SHOW/HIDE are in the range because a flyout closing
         // reshuffles the band without always emitting a reorder first.
-        Hook(Native.EVENT_OBJECT_SHOW, Native.EVENT_OBJECT_REORDER, shellPid);
+        Hook(Native.EVENT_OBJECT_SHOW, Native.EVENT_OBJECT_REORDER, ShellPid);
 
         // Any app coming to the foreground can also land above us.
         Hook(Native.EVENT_SYSTEM_FOREGROUND, Native.EVENT_SYSTEM_FOREGROUND, 0);

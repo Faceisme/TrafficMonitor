@@ -30,6 +30,7 @@ public partial class WidgetWindow : Window
     private RECT _candidateRect;
     private int _candidateHits;
     private int _fullscreenHits;
+    private int _taskbarMissHits;
     private bool _hidden;
     private bool _dragging;
     private POINT _dragOrigin;
@@ -165,12 +166,16 @@ public partial class WidgetWindow : Window
 
     private void UpdatePlacement()
     {
+        RehookZOrderWatcherIfExplorerRestarted();
+
         if (_settings.HideOnFullscreen && WindowHelper.IsFullscreenAppActive())
         {
             // Two consecutive detections before hiding: a taskbar flyout that momentarily reports a
             // monitor-sized rect must not blink the widget out and straight back in.
             if (++_fullscreenHits >= 2)
             {
+                if (_fullscreenHits == 2)
+                    Log.Info($"widget hidden: fullscreen app detected ({WindowHelper.DescribeForegroundWindow()})");
                 SetHidden(true);
                 return;
             }
@@ -191,14 +196,29 @@ public partial class WidgetWindow : Window
         var tb = TaskbarLocator.Locate();
         if (tb == null || !Native.IsWindowVisible(tb.Hwnd) || tb.Bounds.IsEmpty)
         {
-            SetHidden(true);
+            // A single miss can be a transient race (taskbar redraw, DPI change, explorer.exe
+            // momentarily respawning) rather than the taskbar genuinely being gone; two consecutive
+            // misses distinguish a real outage from a one-tick blip.
+            if (++_taskbarMissHits >= 2)
+            {
+                if (_taskbarMissHits == 2)
+                {
+                    string reason = tb == null ? "FindWindow(Shell_TrayWnd) failed"
+                        : !Native.IsWindowVisible(tb.Hwnd) ? "taskbar window not visible"
+                        : "taskbar bounds empty";
+                    Log.Info($"widget hidden: taskbar not found ({reason})");
+                }
+                SetHidden(true);
+            }
             return;
         }
+        _taskbarMissHits = 0;
 
         // An auto-hidden taskbar slides off-screen; follow it instead of floating over content.
         var work = WindowHelper.MonitorInfoFor(new POINT { X = tb.Bounds.Left + 1, Y = tb.Bounds.Top + 1 });
         if (tb.AutoHidden && !work.rcMonitor.Contains(tb.Bounds.Left + 2, tb.Bounds.Top + tb.Bounds.Height / 2))
         {
+            Log.Info("widget hidden: taskbar auto-hidden and off-screen");
             SetHidden(true);
             return;
         }
@@ -208,6 +228,23 @@ public partial class WidgetWindow : Window
         var r = TaskbarLocator.ComputeWidgetRect(tb, _settings.WidgetWidth, _settings.WidgetGap, _settings.WidgetOffsetY);
         ApplyTaskbarRect(r);
         WindowHelper.BumpToTop(this);
+    }
+
+    /// <summary>
+    /// The ZOrderWatcher's WinEvent hook is scoped to explorer's PID at the time it was created; if
+    /// explorer.exe restarts, that PID no longer exists and Windows silently stops delivering events
+    /// to the hook. Re-create it once the shell's actual PID has moved on.
+    /// </summary>
+    private void RehookZOrderWatcherIfExplorerRestarted()
+    {
+        if (_zOrder == null) return;
+
+        uint shellPid = WindowHelper.GetShellProcessId();
+        if (shellPid == 0 || shellPid == _zOrder.ShellPid) return;
+
+        Log.Info($"explorer restarted (shell pid {_zOrder.ShellPid} -> {shellPid}); re-hooking z-order watcher");
+        _zOrder.Dispose();
+        _zOrder = new ZOrderWatcher(RestoreZOrder);
     }
 
     /// <summary>
@@ -279,6 +316,7 @@ public partial class WidgetWindow : Window
         _hidden = hide;
         Visibility = hide ? Visibility.Hidden : Visibility.Visible;
         if (hide) HiddenChanged?.Invoke();
+        else Log.Info("widget shown again");
     }
 
     private static bool SameRect(RECT a, RECT b) =>
